@@ -1,0 +1,28 @@
+<resources>
+    <string-array name="filter_array">
+        <item>День</item>
+        <item>Неделя</item>
+        <item>Месяц</item>
+        <item>Год</item>
+    </string-array>
+    <string name="app_name">MobileClient</string>
+    <string name="SignIn">Войти</string>
+    <string name="loginHint">Логин</string>
+    <string name="passHint">Пароль</string>
+    <string name="tv_sign_up">Нет аккаунта? Зарегистрироваться</string>
+    <string name="b_sign_up">Регистрация</string>
+    <string name="repeat_pass">Повторите пароль</string>
+    <string name="email">Эл. почта</string>
+    <string name="tv_sign_in">Есть аккаунт? Войти</string>
+    <string name="open">Open</string>
+    <string name="close">Close</string>
+    <string name="all_files">Все файлы</string>
+    <string name="settings">Настройки</string>
+    <string name="profile">Профиль</string>
+    <string name="help">Помогите</string>
+    <string name="title_activity_profile">ProfileActivity</string>
+    <string name="change">Изменить</string>
+    <string name="loginDots">Логин:</string>
+    <string name="passDots">Пароль:</string>
+    <string name="emailDots">Почта:</string>
+</resources>
