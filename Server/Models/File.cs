@@ -5,18 +5,18 @@ namespace Server.Models
 {
     public class File
     {
+        public int Id { get; set; }
+
         public string Name { get; set; }
 
-        public uint Size { get; set; }
+        public long Size { get; set; }
 
         public string? Modified { get; set; }
 
-        public int Id { get; set; }
-
-        public int UserId { get; set; }
+        public int FolderId { get; set; }
 
         [JsonIgnore]
-        public User? User { get; set; }
+        public Folder? Folder { get; set; }
 
         public File()
         {

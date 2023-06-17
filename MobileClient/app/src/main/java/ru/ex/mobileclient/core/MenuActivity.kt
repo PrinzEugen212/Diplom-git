@@ -1,13 +1,13 @@
 package ru.ex.mobileclient.core
 
 import android.Manifest
-import android.app.DatePickerDialog
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.icu.text.CaseMap.Fold
 import android.net.Uri
-import android.opengl.Visibility
 import android.os.Bundle
 import android.text.InputType
+import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -15,16 +15,17 @@ import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.SearchView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import ru.ex.mobileclient.R
 import ru.ex.mobileclient.dataProviders.HttpDataProvider
 import ru.ex.mobileclient.databinding.ActivityMenuBinding
-import ru.ex.mobileclient.models.FileModel
+import ru.ex.mobileclient.models.FolderModel
 import java.io.File
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
@@ -34,11 +35,11 @@ class MenuActivity : AppCompatActivity() {
     private val resultCodeFileChooser = 2000
 
 
-    private var dataProvider = HttpDataProvider()
+    private var dataProvider = HttpDataProvider(this)
     private lateinit var adapter: FileAdapter
     private lateinit var binding: ActivityMenuBinding
     private lateinit var toggle: ActionBarDrawerToggle
-    private lateinit var fileModels: List<FileModel>
+    private lateinit var rootFolder: FolderModel
     var id: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,23 +48,56 @@ class MenuActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         id = intent.getIntExtra("id", 0)
-        fileModels = dataProvider.getFiles(id)
+        rootFolder = dataProvider.getRootFolder(id.toString())
 
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         adapter = FileAdapter(this)
         binding.recyclerView.adapter = adapter
-        adapter.setListFiles(ArrayList(fileModels))
+        adapter.setRootFolder(rootFolder)
 
         binding.buttonAddFile.setOnClickListener {
-            askPermissionAndBrowseFile()
+            binding.buttonAddFile.visibility =  View.INVISIBLE
+            binding.layoutFileFolder.visibility = View.VISIBLE
         }
         binding.btnCloseFilter.setOnClickListener {
-            binding.layoutFilter.visibility = View.GONE
             binding.buttonAddFile.visibility = View.VISIBLE
+            binding.layoutFilter.visibility = View.INVISIBLE
         }
         binding.btnApplyFilter.setOnClickListener {
             filterFiles()
         }
+
+        binding.btnAddFile.setOnClickListener{
+            askPermissionAndBrowseFile()
+        }
+
+        val dialogBuilder = AlertDialog.Builder(this)
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_rename_folder, null)
+        dialogBuilder.setView(dialogView)
+        binding.btnAddFolder.setOnClickListener{
+            dialogBuilder.setTitle("Создать папку")
+                .setPositiveButton("Создать") { _, _ ->
+                    val editTextName = dialogView.findViewById<EditText>(R.id.editTextName)
+                    val newName = editTextName.text.toString()
+                    //TODO send to server
+                    val newFolder = dataProvider.addFolder(newName, adapter.getCurrent().id)
+                    newFolder.folders = listOf()
+                    newFolder.files = listOf()
+                    rootFolder.folders = rootFolder.folders?.plus(newFolder)
+                    binding.buttonAddFile.visibility = View.VISIBLE
+                    binding.layoutFileFolder.visibility = View.GONE
+                    adapter.setRootFolder(rootFolder)
+                }
+                .setNegativeButton("Отмена") { dialog, _ ->
+                    dialog.dismiss()
+                    binding.buttonAddFile.visibility = View.VISIBLE
+                    binding.layoutFileFolder.visibility = View.GONE
+                }
+
+            val dialog = dialogBuilder.create()
+            dialog.show()
+        }
+
         val spinner = binding.planetsSpinner
         ArrayAdapter.createFromResource(
             this,
@@ -78,6 +112,11 @@ class MenuActivity : AppCompatActivity() {
             InputType.TYPE_CLASS_NUMBER
         binding.sizeMax.inputType =
             InputType.TYPE_CLASS_NUMBER
+
+        val fileSizeOptions = arrayOf("B", "KB", "MB", "GB")
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, fileSizeOptions)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.fileSizeSpinner.adapter = adapter
 
         binding.apply {
             toggle = ActionBarDrawerToggle(this@MenuActivity, drawer, R.string.open, R.string.close)
@@ -94,40 +133,9 @@ class MenuActivity : AppCompatActivity() {
     }
 
     private fun filterFiles() {
-        var new = fileModels
-        if (binding.sizeMin.text.isNotBlank()) {
-            new = new.filter { file ->
-                file.size >= binding.sizeMin.text.toString().toInt()
-            }
-        }
-
-        if (binding.sizeMax.text.isNotBlank()) {
-            new = new.filter { file ->
-                file.size <= binding.sizeMax.text.toString().toInt()
-            }
-        }
-
-        var date = LocalDateTime.now()
-        when (binding.planetsSpinner.selectedItemId) {
-            0L -> {
-                date = date.minusDays(1)
-            }
-            1L -> {
-                date = date.minusWeeks(1)
-            }
-            2L -> {
-                date = date.minusMonths(1)
-            }
-            3L -> {
-                date = date.minusYears(1)
-            }
-        }
-
-        new = new.filter { file ->
-            file.getDate() >= date
-        }
-
-        adapter.setListFiles(ArrayList(new))
+        val fileFilter = FileFilter(binding)
+        val resultingFolder = fileFilter.filterFolder(rootFolder)
+        adapter.setRootFolder(resultingFolder)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -144,10 +152,10 @@ class MenuActivity : AppCompatActivity() {
                 }
 
                 override fun onQueryTextChange(p0: String?): Boolean {
-                    val new = fileModels.filter { file ->
-                        file.name.lowercase().contains(p0!!.lowercase())
+                    val new = p0?.let { FileUtils.SearchInNames(rootFolder, it) }
+                    if (new != null) {
+                        adapter.setRootFolder(new)
                     }
-                    adapter.setListFiles(ArrayList(new))
                     return true
                 }
             }
@@ -178,12 +186,26 @@ class MenuActivity : AppCompatActivity() {
                 intent.putExtra("id", id)
                 startActivity(intent)
             }
+            R.id.settings ->{
+                val intent = Intent(this, SettingsActivity::class.java)
+                startActivity(intent)
+            }
         }
     }
 
     private fun refresh() {
-        fileModels = dataProvider.getFiles(id)
-        adapter.setListFiles(ArrayList(fileModels))
+        rootFolder = dataProvider.getRootFolder(id.toString())
+        adapter.setRootFolder(rootFolder)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val callback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                adapter.goBack()
+            }
+        }
+        onBackPressedDispatcher.addCallback(this, callback)
     }
 
     private fun askPermissionAndBrowseFile() {

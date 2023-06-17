@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "SO10c0dXTXLkxtKPLy+dMXqg9srF8W4W8zc4ZmGzMm6v9Alwip+M+X1MQn4Z9gGn+Bpe6E/8R0Anc3D5l0FxfA==",
+  "success": true,
+  "projectFilePath": "E:\\Learn\\Diplom-git\\Diplom-git\\PcClient\\PcClient.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\user\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}

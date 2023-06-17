@@ -12,7 +12,7 @@ import ru.ex.mobileclient.databinding.ActivitySignUpBinding
 import ru.ex.mobileclient.models.User
 
 class SignUpActivity : AppCompatActivity() {
-    private val dataProvider = HttpDataProvider()
+    private val dataProvider = HttpDataProvider(this)
     private lateinit var binding: ActivitySignUpBinding
 
     private val loginLiveData = MutableLiveData<String>()

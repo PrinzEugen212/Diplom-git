@@ -13,7 +13,7 @@ import ru.ex.mobileclient.databinding.ActivityProfileBinding
 import ru.ex.mobileclient.models.User
 
 class ProfileActivity : AppCompatActivity() {
-    private val dataProvider = HttpDataProvider()
+    private val dataProvider = HttpDataProvider(this)
     private lateinit var binding: ActivityProfileBinding
     private var id: Int = 0
     private var user: User? = null

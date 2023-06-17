@@ -11,11 +11,12 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import ru.ex.mobileclient.auth.SignUpActivity
 import ru.ex.mobileclient.core.MenuActivity
+import ru.ex.mobileclient.core.SettingsActivity
 import ru.ex.mobileclient.dataProviders.HttpDataProvider
 import ru.ex.mobileclient.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
-    private val dataProvider = HttpDataProvider()
+    private val dataProvider = HttpDataProvider(this)
     private lateinit var binding: ActivityMainBinding
 
 
@@ -43,6 +44,7 @@ class MainActivity : AppCompatActivity() {
         val loginLayout = binding.loginLayout
         val passLayout = binding.passLayout
         val signInButton = binding.buttonSignIn
+        val settingsButton = binding.buttonSettings
         loginLayout.editText?.doOnTextChanged { text, _, _, _ ->
             loginLiveData.value = text?.toString()
         }
@@ -66,13 +68,21 @@ class MainActivity : AppCompatActivity() {
             authorize(loginLiveData.value.toString(), passwordLiveData.value.toString())
         }
 
-        loginLayout.editText?.setText("string")
-        passLayout.editText?.setText("string")
+        //Настройки
+        settingsButton.setOnClickListener {
+            val intent = Intent(this, SettingsActivity::class.java)
+            startActivity(intent)
+        }
+
+        dataProvider.putCurrentHost()
+
+        loginLayout.editText?.setText("TestUser")
+        passLayout.editText?.setText("TestUser")
     }
 
     private fun validateForm(login: String?, password: String?): Boolean {
-        val isValidLogin = login != null && login.isNotBlank()
-        val isValidPassword = password != null && password.isNotBlank() && password.length >= 6
+        val isValidLogin = !login.isNullOrBlank()
+        val isValidPassword = !password.isNullOrBlank() && password.length >= 6
         return isValidLogin && isValidPassword
     }
 

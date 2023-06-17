@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="PcClient.Controls.DefaultFunctions">
+    <Position X="2.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAABCAEAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Controls\DefaultFunctions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PcClient.Controls.FileControl">
+    <Position X="4" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAACEABAgCIAAAwARECCADBCAAABBIAAQIAEECAUkEA=</HashCode>
+      <FileName>Controls\FileControl.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PcClient.Controls.FolderControl">
+    <Position X="5.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAgCIEAAgIhECAABACAACJAQABAAAGAACAAEA=</HashCode>
+      <FileName>Controls\FolderControl.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PcClient.Controls.ProfileChangeControl">
+    <Position X="7.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAAAICAAABAAAECEABACAEACAIAAQAAAAAAEAAA=</HashCode>
+      <FileName>Controls\ProfileChangeControl.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PcClient.Controls.ProfileControl">
+    <Position X="9.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AoAAAAAQECAAAhAAAAiAARACAAAAAIBAAAAAAAAAAAA=</HashCode>
+      <FileName>Controls\ProfileControl.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PcClient.Controls.AuthControls.AuthControl">
+    <Position X="0.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAAAACAAIBAIAECAAAACAAAIAAAAACAEAAQAAAA=</HashCode>
+      <FileName>Controls\AuthControls\AuthControl.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PcClient.Controls.AuthControls.RegisterControl">
+    <Position X="11" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAhAAAAACAAABAIAECEAAACAEAIAAAAAAAAAAQEAAA=</HashCode>
+      <FileName>Controls\AuthControls\RegisterControl.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

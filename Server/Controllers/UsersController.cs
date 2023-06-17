@@ -41,47 +41,6 @@ namespace Server.Controllers
             return user;
         }
 
-        [HttpGet("authorize")]
-        public async Task<ActionResult<User>> GetUser(string login, string password)
-        {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Login == login);
-            if (user == null)
-            {
-                return NoContent();
-            }
-
-            if (user.Password != password)
-            {
-                return Unauthorized();
-            }
-
-            return user;
-        }
-
-        [HttpGet("login_exists")]
-        public async Task<ActionResult<bool>> LoginExists(string login)
-        {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Login.Equals(login));
-            if (user == null)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        [HttpGet("email_exists")]
-        public async Task<ActionResult<bool>> EmailExists(string email)
-        {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email.Equals(email));
-            if (user == null)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
         // PUT: api/Users/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
@@ -92,8 +51,21 @@ namespace Server.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(user).State = EntityState.Modified;
+            User oldUser = await _context.Users.FindAsync(id);
+            if (oldUser.Login != user.Login)
+            {
+                Folder folder = await _context.Folders.Where(f => f.UserId == id && f.IsRoot).FirstAsync();
+                string oldPath = $"{Constants.PathToRootFolders}\\{folder.Name}";
+                folder.Name = user.Login;
+                string newPath = $"{Constants.PathToRootFolders}\\{folder.Name}";
+                Directory.Move(oldPath, newPath);
+                _context.Entry(folder).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+                _context.ChangeTracker.Clear();
+            }
 
+            _context.ChangeTracker.Clear();
+            _context.Entry(user).State = EntityState.Modified;
             try
             {
                 await _context.SaveChangesAsync();
@@ -118,9 +90,22 @@ namespace Server.Controllers
         [HttpPost]
         public async Task<ActionResult<User>> PostUser(User user)
         {
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            string path = $"{Constants.PathToRootFolders}\\{user.Login}";
+            Folder folder = new Folder()
+            {
+                Name = user.Login,
+                IsRoot = true,
+                Modified = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+            };
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
 
+            folder.User = user;
+            _context.Users.Add(user);
+            _context.Folders.Add(folder);
+            await _context.SaveChangesAsync();
             return CreatedAtAction("GetUser", new { id = user.Id }, user);
         }
 
@@ -132,6 +117,12 @@ namespace Server.Controllers
             if (user == null)
             {
                 return NotFound();
+            }
+
+            string path = $"{Constants.PathToRootFolders}\\{user.Login}";
+            if (Directory.Exists(path))
+            {
+                Directory.Delete(path, true);
             }
 
             _context.Users.Remove(user);

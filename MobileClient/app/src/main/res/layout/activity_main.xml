@@ -6,6 +6,16 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <ImageView
+        android:id="@+id/button_settings"
+        android:layout_width="33dp"
+        android:layout_height="36dp"
+        android:layout_margin="16dp"
+        android:contentDescription="Настройки"
+        android:src="@drawable/ic_gear"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/login_layout"
         android:layout_width="0dp"

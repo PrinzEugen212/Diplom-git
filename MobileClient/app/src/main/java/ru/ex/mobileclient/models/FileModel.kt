@@ -5,11 +5,11 @@ import java.time.format.DateTimeFormatter
 
 @kotlinx.serialization.Serializable
 data class FileModel(
-    val name : String,
-    val size : Int,
     val id : Int,
-    val userId : Int,
-    val modified: String
+    val name : String,
+    val size : Long,
+    val modified: String,
+    val folderId : Int,
 ){
     fun getDate() : LocalDateTime{
         return LocalDateTime.parse(modified, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))

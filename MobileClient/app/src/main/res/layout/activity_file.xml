@@ -16,6 +16,22 @@
         app:layout_constraintStart_toStartOf="parent">
 
         <Button
+            android:id="@+id/button_link"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="3"
+            android:paddingVertical="6dp"
+            android:text="Ссылка"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@android:color/black" />
+
+        <Button
             android:id="@+id/button_change"
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="0dp"

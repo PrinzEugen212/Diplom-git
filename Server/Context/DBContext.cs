@@ -12,6 +12,8 @@ namespace Server.Context
     {
         public DbSet<User> Users { get; set; }
         public DbSet<File> Files { get; set; }
+        public DbSet<Folder> Folders { get; set; }
+        public DbSet<PublicLink> PublicLinks { get; set; }
         public DBContext(DbContextOptions<DBContext> options) : base(options)
         {
             Database.EnsureCreated();
@@ -26,7 +28,5 @@ namespace Server.Context
                 .HasIndex(u => u.Login)
                 .IsUnique();
         }
-
-
     }
 }

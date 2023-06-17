@@ -41,7 +41,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:elevation="2dp"
-        android:visibility="visible">
+        android:visibility="gone">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -76,6 +76,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/title_what_to_show" />
 
+
             <LinearLayout
                 android:id="@+id/filter_size"
                 android:layout_width="match_parent"
@@ -87,7 +88,7 @@
 
                 <EditText
                     android:id="@+id/size_min"
-                    android:layout_width="wrap_content"
+                    android:layout_width="10dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="3"
                     android:hint="От:"
@@ -99,7 +100,7 @@
 
                 <EditText
                     android:id="@+id/size_max"
-                    android:layout_width="wrap_content"
+                    android:layout_width="21dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="3"
                     android:hint="До:"
@@ -107,6 +108,11 @@
                     android:padding="10dp"
                     app:layout_constraintStart_toEndOf="@+id/size_min"
                     app:layout_constraintTop_toBottomOf="@+id/text_category_directory" />
+
+                <Spinner
+                    android:id="@+id/fileSizeSpinner"
+                    android:layout_width="107dp"
+                    android:layout_height="wrap_content" />
             </LinearLayout>
 
             <TextView
@@ -143,5 +149,37 @@
                 app:layout_constraintTop_toBottomOf="@+id/filter_date" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layout_file_folder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:elevation="2dp"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:id="@+id/layout_filter_buttons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <Button
+                android:id="@+id/btn_add_file"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Файл" />
+
+            <Button
+                android:id="@+id/btn_add_folder"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Папку" />
+
+        </LinearLayout>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.drawerlayout.widget.DrawerLayout>

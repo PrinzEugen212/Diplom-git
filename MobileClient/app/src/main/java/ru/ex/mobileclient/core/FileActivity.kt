@@ -1,6 +1,10 @@
 package ru.ex.mobileclient.core
 
 import android.Manifest
+import android.app.Dialog
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -8,11 +12,18 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.view.MenuItem
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
+import ru.ex.mobileclient.R
 import ru.ex.mobileclient.dataProviders.HttpDataProvider
 import ru.ex.mobileclient.databinding.ActivityFileBinding
 import ru.ex.mobileclient.models.FileModel
+import ru.ex.mobileclient.models.FolderModel
+import ru.ex.mobileclient.models.PublicLink
 import ru.ex.mobileclient.models.User
 import java.io.File
 import java.util.*
@@ -22,10 +33,12 @@ class FileActivity : AppCompatActivity() {
     private val resultCodeFileChooser = 2000
 
     private lateinit var binding: ActivityFileBinding
-    private var dataProvider = HttpDataProvider()
+    private var dataProvider = HttpDataProvider(this)
+    private var address = dataProvider.address
     private lateinit var file: FileModel
     private lateinit var user: User
     var id: Int = 0
+    var userId: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,6 +49,7 @@ class FileActivity : AppCompatActivity() {
         supportActionBar?.setDisplayShowHomeEnabled(true)
 
         id = intent.getIntExtra("id", 0)
+        userId = intent.getIntExtra("userId", 0)
         loadInfo()
         binding.buttonDownload.setOnClickListener {
             downloadFile()
@@ -46,39 +60,43 @@ class FileActivity : AppCompatActivity() {
         binding.buttonChange.setOnClickListener{
             askPermissionAndBrowseFile()
         }
+        binding.buttonLink.setOnClickListener{
+            showLinkDialog(file)
+        }
     }
 
     private fun loadInfo(){
         file = dataProvider.getFileModel(id)
-        user = dataProvider.getUser(file.userId)
+        user = dataProvider.getUser(userId)
         binding.tvFileName.text = file.name
-        binding.tvFileSize.text = file.size.toString() + "KB"
+        binding.tvFileSize.text = FileUtils.FileSizeToString(file.size)
         binding.tvChangeTime.text = file.modified
     }
 
     private fun downloadFile() {
         val publicDownloadFolder =
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-        val downloadFolder = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+//        val downloadFolder = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
 
         File("$publicDownloadFolder/${user.login}").mkdir()
         val publicFile = File("$publicDownloadFolder/${user.login}/${file.name}")
 
-        File("$downloadFolder/${user.login}").mkdir()
-        val file = File("$downloadFolder/${user.login}/${file.name}")
+//        File("$downloadFolder/${user.login}").mkdir()
+//        val file = File("$downloadFolder/${user.login}/${file.name}")
         val stream = dataProvider.getFile(id)
         val thread = Thread {
             stream.use { input ->
-                file.outputStream().use { output ->
+                publicFile.outputStream().use { output ->
                     input.copyTo(output)
                 }
-                file.copyTo(publicFile, true)
+//                publicFile.copyTo(publicFile, true)
             }
         }
 
         thread.start()
         thread.join()
-        Toast.makeText(this@FileActivity, "Файл загружен", Toast.LENGTH_LONG).show()
+//        Toast.makeText(this@FileActivity, "Файл загружен", Toast.LENGTH_LONG).show()
+        println("Файл загружен")
     }
 
     private fun deleteFile() {
@@ -114,6 +132,63 @@ class FileActivity : AppCompatActivity() {
             return
         }
         doBrowseFile()
+    }
+
+    private fun showLinkDialog(model: FileModel){
+        val dialog = Dialog(this)
+        dialog.setContentView(R.layout.dialog_public_link)
+        val editTextDownloadCount = dialog.findViewById<EditText>(R.id.edit_text_download_count)
+        val linkText = dialog.findViewById<TextView>(R.id.textPublicLink)
+        val buttonCreateLink = dialog.findViewById<Button>(R.id.button_create_link)
+        val buttonDeleteLink = dialog.findViewById<Button>(R.id.button_delete_link)
+        val close = dialog.findViewById<ImageView>(R.id.image_close)
+        val copy = dialog.findViewById<Button>(R.id.button_copy_link)
+        var newLink : PublicLink
+
+        val link = dataProvider.getLink(model.id, true)
+        if (link != null){
+            linkText.text = "$address/${link.id}"
+            if (link.downloadCount == -1){
+                link.downloadCount = 0
+            }
+            editTextDownloadCount.setText(link.downloadCount.toString())
+        }
+
+        buttonCreateLink.setOnClickListener {
+            val downloadCountText = editTextDownloadCount.text.toString()
+            val downloadCount = if (downloadCountText.isNotBlank()) downloadCountText.toIntOrNull() else null
+
+            if (downloadCount != null) {
+                newLink = dataProvider.createLink(model.id,true, downloadCount)
+            } else {
+                newLink = dataProvider.createLink(model.id,true)
+            }
+
+            linkText.text = "$address${newLink.id}"
+            if (newLink.downloadCount == -1){
+                newLink.downloadCount = 0
+            }
+            editTextDownloadCount.setText(newLink.downloadCount.toString())
+        }
+
+        buttonDeleteLink.setOnClickListener {
+            dataProvider.deleteLink(model.id, true)
+            dialog.dismiss()
+        }
+
+        copy.setOnClickListener {
+            val clipboard = this.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clip = ClipData.newPlainText("Link", linkText.text)
+            clipboard.setPrimaryClip(clip)
+            Toast.makeText(this, "Ссылка скопирована", Toast.LENGTH_SHORT).show()
+        }
+
+        close.setOnClickListener{
+            dialog.dismiss()
+        }
+
+
+        dialog.show()
     }
 
     private fun doBrowseFile() {
@@ -167,7 +242,7 @@ class FileActivity : AppCompatActivity() {
                             ).show()
                         }
 
-                        if (dataProvider.changeFile(fileToChange, file.userId, id)){
+                        if (dataProvider.changeFile(fileToChange, file.folderId, id)){
                             Toast.makeText(this@FileActivity, "Файл обновлен", Toast.LENGTH_LONG).show()
                             loadInfo()
                         }
